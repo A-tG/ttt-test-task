@@ -5,7 +5,7 @@ module.exports = {
     {
         // check request POST /new_game { "user_name": "John Doe", size: 3 /* размер поля */ }
         // create session
-        var tokensPair = gameSessions.createNewGame("John Doe", 3);
+        var tokensPair = gameSessions.createNewGame('John Doe', 3);
         // respond (status, acces token, game token)
         var resObj = {
             status: 'ok',
@@ -19,7 +19,7 @@ module.exports = {
     {
         // check request POST /join_game { "game_token": "123abc", "user_name": "Chuck Norris" }
         // join to session 
-        var accesToken = gameSessions.joinGame();
+        var accesToken = gameSessions.joinGame('John', '123abc');
         // respond (status, access token)
         var resObj = {
             status: 'ok',
@@ -58,5 +58,5 @@ module.exports = {
             message: 'Bad request'
         };
         res.json(resObj);
-    },
+    }
 }

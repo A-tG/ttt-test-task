@@ -1,6 +1,8 @@
 const UPDATE_TIME = 2000;
 const MAX_SESSION_DURATION = 1000 * 60 * 5;
 
+const gameLogic = require('./game_logic.js');
+
 var sessions = {};
 var usersConnectionsToGames = {};
 
@@ -44,32 +46,6 @@ function getNewAccessToken()
     return (!isTokenUsed) ? accessToken : '-1';
 }
 
-function createField(fieldSize)
-{
-    var field = [];
-    for (var row = 0; row < fieldSize; row++)
-    {
-        field.push([]);
-        for (var col = 0; col < fieldSize; col++)
-        {
-            field[row].push('?');
-        }
-    }
-    return field;
-}
-
-function isUserTurn(game, accesToken)
-{
-    var result = false;
-    return result;
-}
-
-function makeMove(field, move)
-{
-    var result = false;
-    return result;
-}
-
 function updateSessions()
 {
     for (key in sessions)
@@ -93,15 +69,7 @@ module.exports = {
         var isTokensCreated = (gameToken !== '-1') && (accessToken !== '-1');
         if (isTokensCreated)
         {
-            hostPlayer = {
-                name: hostPlayerName,
-                accessToken: accessToken
-            };
-            sessions[gameToken] = {
-                gameDuration: 0,
-                field: createField(fieldSize),
-                players: [hostPlayer]
-            };
+            sessions[gameToken] = gameLogic.createNewGame(hostPlayerName, fieldSize, accesToken, gameToken);
             usersConnectionsToGames[accessToken] = gameToken;
             tokensPair = [gameToken, accessToken];
         }
@@ -111,25 +79,20 @@ module.exports = {
     joinGame: function(playerName, gameToken)
     {
         var isGameExist = sessions[gameToken] !== undefined;
-        var gameToken = '-1';
+        var accesToken = '-1';
         if (isGameExist)
         {
             var game = sessions[gameToken];
-            var accesToken = getNewAccessToken();
-            var playersNumber = game.players.length;
+            accessToken = getNewAccessToken();
+            var playersNumber = getPlayersNumber(game);
             var isTokenCreated = accesToken !== '-1';
             if ((playersNumber < 2) && (isTokenCreated))
             {
-                gameToken = game.gameToken;
-                var player = {
-                    name: playerName,
-                    accessToken: accessToken
-                }
-                game.players.push(player);
+                gameLogic.joinGame(game, playerName, accessToken);
                 usersConnectionsToGames[accesToken] = gameToken;
             }
         }
-        return gameToken;
+        return accesToken;
     },
     
     makeMove: function(accesToken, move)
@@ -139,26 +102,23 @@ module.exports = {
         if (isGameExist)
         {
             var gameToken = usersConnectionsToGames[accesToken];
-            result = makeMove(sessions[gameToken], move);
+            result = gameLogic.makeMove(sessions[gameToken], move, accesToken);
         }
         return result;
     },
     
     getState: function(accesToken)
     {
-        var state = {status: 'not in game'};
+        var state = {
+            status: 'error',
+            message: 'User not in game'
+        };
         var isGameExist = usersConnectionsToGames[accesToken] !== undefined;
         if (isGameExist)
         {
             var gameToken = usersConnectionsToGames[accesToken];
             var game = session[gameToken];
-            state = {
-                status: 'ok',
-                your_turn: isUserTurn(game, accesToken),
-                game_duration: game.gameDuration,
-                field: game.field
-                //winner
-            }
+            state = gameLogic.getState(game, accesToken);
         }
         return state;
     }
