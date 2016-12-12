@@ -39,6 +39,7 @@ function Game(hostPlayerName, fieldSize, accessToken, gameToken)
     
     this.getState = function(accessToken)
     {
+        this.idleDuration = 0;
         var gameDuration = this.gameDuration;
         var field = this.field;
         var state = {
@@ -51,13 +52,16 @@ function Game(hostPlayerName, fieldSize, accessToken, gameToken)
         {
             state.winner = this.winner;
         }
-        this.idleDuration = 0;
         return state;
     }
     
     this.joinGame = function(playerName, accessToken)
     {
-        this.players.push(new Player(playerName, accessToken));
+        var playersNumber = this.players.length;
+        if (playersNumber < PLAYERS_NUMBER)
+        {
+            this.players.push(new Player(playerName, accessToken));
+        }
     };
     
     this.makeMove = function(move, accessToken)
@@ -65,17 +69,23 @@ function Game(hostPlayerName, fieldSize, accessToken, gameToken)
         var result = false;
         if (isUserTurn(accessToken) && canMakeMove(move))
         {
+            this.idleDuration = 0;
             var moveMarker = getMoveMarker();
             this.field[move.row][move.col] = moveMarker;
-            this.playerTurn = (this.playerTurn + 1) % Math.min(this.players.length, PLAYERS_NUMBER);
-            this.idleDuration = 0;
             determineWinner();
+            incPlayerTurn();
             result = true;
         }
         return result;
     };
     
     var thisGame = this;
+    
+    function incPlayerTurn()
+    {
+        var playersNumber = thisGame.players.length;
+        thisGame.playerTurn = (thisGame.playerTurn + 1) % playersNumber;
+    }
     
     function getMoveMarker()
     {
@@ -102,7 +112,10 @@ function Game(hostPlayerName, fieldSize, accessToken, gameToken)
     
     function canMakeMove(move)
     {
-        var isCanMakeMoveOnField = thisGame.field[move.row][move.col] === EMPTY_MARK;
+        var fieldSize = thisGame.field.length;
+        var isCanMakeMoveOnField = (move.row < fieldSize) && (move.row >= 0) && 
+            (move.col < fieldSize) && (move.col >= 0) && 
+            thisGame.field[move.row][move.col] === EMPTY_MARK;
         var isEnoughPlayers = thisGame.players.length == PLAYERS_NUMBER;
         var isNoWinner = thisGame.winner === undefined;
         return isCanMakeMoveOnField && isEnoughPlayers && isNoWinner;
@@ -110,8 +123,10 @@ function Game(hostPlayerName, fieldSize, accessToken, gameToken)
     
     function determineWinner()
     {
-        // определить образуют ли маркеры линию, и записать в thisGame.winner имя победившего игрока
-        checkFieldForLines(thisGame.field);
+        if (isFieldHaveMarkersLines(thisGame.field))
+        {
+            thisGame.winner = thisGame.players[thisGame.playerTurn];
+        }
     }
 }
 
@@ -122,12 +137,16 @@ function isMarkersFormsLine(line)
     return isNoEmptyMarkers && line.every(lineMarker => lineMarker === firstMarker);
 }
 
-function checkFieldForLines(field)
+function isFieldHaveMarkersLines(field)
 {
     var isFormLine = false;
     for (var row = 0; row < field.length; row++)
     {
         isFormLine = isMarkersFormsLine(field[row]);
+        if (isFormLine)
+        {
+            return true;
+        }
     }
     for (var col = 0; col < field.length; col++)
     {
@@ -137,6 +156,10 @@ function checkFieldForLines(field)
             vertLine.push(field[row][col]);
         }
         isFormLine = isMarkersFormsLine(vertLine);
+        if (isFormLine)
+        {
+            return true;
+        }
     }
     var diagonalLine = [];
     for (var i = 0; i < field.length; i++)
@@ -165,7 +188,7 @@ function createField(fieldSize)
 module.exports = {
     createNewGame: function(hostPlayerName, fieldSize, accessToken, gameToken)
     {
-        var game = new Game(hostPlayerName, fieldSize, accessToken, gameToken)
+        var game = new Game(hostPlayerName, fieldSize, accessToken, gameToken);
         return game;
     }
 }
