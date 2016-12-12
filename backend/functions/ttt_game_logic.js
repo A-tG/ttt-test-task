@@ -2,6 +2,8 @@ const PLAYER1_MARK = 'X';
 const PLAYER2_MARK = 'O';
 const EMPTY_MARK = '?';
 const PLAYERS_NUMBER = 2;
+const MAX_FIELD_SIZE = 5;
+const MIN_FIELD_SIZE = 3;
 
 function Player(name, accessToken)
 {
@@ -174,6 +176,8 @@ function isFieldHaveMarkersLines(field)
 function createField(fieldSize)
 {
     var field = [];
+    fieldSize = Math.max(MIN_FIELD_SIZE, fieldSize);
+    fieldSize = Math.min(MAX_FIELD_SIZE, fieldSize);
     for (var row = 0; row < fieldSize; row++)
     {
         field.push([]);
