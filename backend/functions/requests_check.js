@@ -15,9 +15,9 @@ module.exports = {
         var isJson = req.is('json') === 'json';
         var isNameCorrect = (req.body.user_name !== undefined) && 
             isCorrectUserName(req.body.user_name);
-        // нужна проверка размера поля
         var isSizeCorrect = (req.body.size !== undefined) && 
-            Number.isInteger(req.body.size);
+            Number.isInteger(req.body.size) &&
+            (req.body.size > 0);
         return isNameCorrect && isSizeCorrect;
     },
     
@@ -38,8 +38,12 @@ module.exports = {
     
     makeMoveRequest: function(req)
     {
-        var isRowCorrect = (req.body.row !== undefined) && Number.isInteger(req.body.row);
-        var isColCorrect = (req.body.col !== undefined) && Number.isInteger(req.body.col);
+        var isRowCorrect = (req.body.row !== undefined) && 
+            Number.isInteger(req.body.row) &&
+            (req.body.row > 0);
+        var isColCorrect = (req.body.col !== undefined) && 
+            Number.isInteger(req.body.col) &&
+            (req.body.col > 0);
         return isRowCorrect && isColCorrect;
     },
     
