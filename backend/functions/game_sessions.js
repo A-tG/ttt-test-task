@@ -101,7 +101,7 @@ module.exports = {
         return accessToken;
     },
     
-    makeMove: function(accessToken, move)
+    makeMove: function(move, accessToken)
     {
         var result = false;
         var isGameExist = usersConnectionsToGames[accessToken] !== undefined;

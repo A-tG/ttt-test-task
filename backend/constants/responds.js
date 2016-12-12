@@ -9,6 +9,10 @@ module.exports = {
         message: 'Bad request'
     },
     
+    OK: {
+        status: 'ok'
+    },
+    
     NEW_GAME_ERR: {
         status: 'error',
         message: 'Failed to create a game'

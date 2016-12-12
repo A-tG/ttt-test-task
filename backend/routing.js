@@ -1,49 +1,16 @@
 const gameSessions = require('./functions/game_sessions.js');
 const responds = require('./constants/responds.js');
-
-function isCorrectNewGameRequest(req)
-{
-    var isJson = req.is('json') === 'json';
-    // нужна проверка длины имени и размера поля
-    var isNameCorrect = (req.body.user_name !== undefined) && (typeof req.body.user_name === 'string');
-    var isSizeCorrect = (req.body.size !== undefined) && Number.isInteger(req.body.size);
-    return isNameCorrect && isSizeCorrect;
-}
-
-function isCorrectHeader(req)
-{
-    return (req.get('access_token') !== undefined) && (typeof req.get('access_token') === 'string');
-}
-
-function isCorrectJoinGameRequest(req)
-{
-    var isNameCorrect =  (req.body.user_name !== undefined) && (typeof req.body.user_name === 'string');
-    var isGameTokenCorrect = (req.body.game_token !== undefined) && (typeof req.body.game_token === 'string');
-    return isNameCorrect && isGameTokenCorrect;
-}
-
-function isCorrectMakeMoveRequest(req)
-{
-    // нужна проверка - ход в пределах размера поля
-    var isRowCorrect = (req.body.row !== undefined) && Number.isInteger(req.body.row);
-    var isColCorrect = (req.body.col !== undefined) && Number.isInteger(req.body.col);
-    return isRowCorrect && isColCorrect;
-}
-
-function isValidToken(token)
-{
-    return (typeof token === 'string') && (token.length > 0) && (token !== '-1');
-}
+const isCorrect = require('./functions/requests_check.js')
 
 module.exports = {
     newGame: function(req, res)
     {
         var resObj = responds.NOT_VALID;
-        if (isCorrectNewGameRequest(req))
+        if (isCorrect.newGameRequest(req))
         {
             resObj = responds.NEW_GAME_ERR;
             var tokens = gameSessions.createNewGame(req.body.user_name, req.body.size);
-            if (isValidToken(tokens.accessToken) && isValidToken(tokens.gameToken))
+            if (isCorrect.token(tokens.accessToken) && isCorrect.token(tokens.gameToken))
             {
                 resObj = {
                     status: 'ok',
@@ -58,11 +25,11 @@ module.exports = {
     joinGame: function(req, res)
     {
         var resObj = responds.NOT_VALID;
-        if (isCorrectJoinGameRequest(req))
+        if (isCorrect.joinGameRequest(req))
         {
             resObj = responds.JOIN_GAME_ERR;
             var accesToken = gameSessions.joinGame(req.body.user_name, req.body.game_token);
-            if (isValidToken(accesToken))
+            if (isCorrect.token(accesToken))
             {
                 resObj = {
                     status: 'ok',
@@ -76,14 +43,12 @@ module.exports = {
     makeMove: function(req, res)
     {
         var resObj = responds.NOT_VALID;
-        if (isCorrectHeader(req) && isCorrectMakeMoveRequest(req))
+        if (isCorrect.header(req) && isCorrect.makeMoveRequest(req))
         {
             resObj = responds.MAKE_MOVE_ERR;
-            if (gameSessions.makeMove(req.get('access_token'), req.body))
+            if (gameSessions.makeMove(req.body, req.get('access_token')))
             {
-                resObj = {
-                    status: 'ok'
-                };
+                resObj = responds.OK;
             }
         }
         res.json(resObj);
@@ -92,7 +57,7 @@ module.exports = {
     getState: function(req, res)
     {
         var resObj = responds.NOT_VALID;
-        if (isCorrectHeader(req))
+        if (isCorrect.header(req))
         {
             var state = gameSessions.getState(req.get('access_token'));
             resObj = state;
