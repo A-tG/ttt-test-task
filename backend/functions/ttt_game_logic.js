@@ -127,7 +127,7 @@ function Game(hostPlayerName, fieldSize, accessToken, gameToken)
     {
         if (isFieldHaveMarkersLines(thisGame.field))
         {
-            thisGame.winner = thisGame.players[thisGame.playerTurn];
+            thisGame.winner = thisGame.players[thisGame.playerTurn].name;
         }
     }
 }

@@ -9,7 +9,7 @@ var usersConnectionsToGames = {};
 function deleteSession(session)
 {
     var tokens = session.getPlayersTokens();
-    for (var i = 0; tokens.length; i++)
+    for (var i = 0; i < tokens.length; i++)
     {
         delete usersConnectionsToGames[tokens[i]];
     }
