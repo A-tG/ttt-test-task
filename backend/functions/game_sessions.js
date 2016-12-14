@@ -6,14 +6,14 @@ const gameLogicTTT = require('./ttt_game_logic.js');
 var sessions = {};
 var usersConnectionsToGames = {};
 
-function deleteSession(session)
+function deleteSession(token)
 {
-    var tokens = session.getPlayersTokens();
+    var tokens = sessions[token].getPlayersTokens();
     for (var i = 0; i < tokens.length; i++)
     {
         delete usersConnectionsToGames[tokens[i]];
     }
-    delete session;
+    delete sessions[token];
 }
 
 function generateToken()
@@ -55,7 +55,7 @@ function updateSessions()
         session.idleDuration += UPDATE_TIME;
         if (session.idleDuration > MAX_IDLE_DURATION)
         {
-            deleteSession(session);
+            deleteSession(key);
         }
     }
 }
